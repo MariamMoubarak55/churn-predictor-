@@ -2,14 +2,45 @@ import streamlit as st
 import joblib
 import pandas as pd
 import numpy as np
+import warnings
+
+warnings.filterwarnings('ignore')
 
 st.set_page_config(page_title="Churn Predictor", page_icon="📊", layout="centered")
 
-@st.cache_resource
-def load_model():
-    return joblib.load(r"C:\Users\ke_ro\OneDrive\Documents\KSF Vault\bank_churn_model_full.pkl")
+# Feature columns — MUST match the order the scaler was trained on
+FEATURE_COLUMNS = [
+    'CreditScore', 'Age', 'Tenure', 'Balance',
+    'NumOfProducts', 'HasCrCard', 'IsActiveMember',
+    'EstimatedSalary',
+    'Geography_Germany', 'Geography_Spain', 'Gender_Male'
+]
 
-model = load_model()
+@st.cache_resource
+def load_artifacts():
+    import os
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    model = joblib.load(os.path.join(script_dir, "bank_churn_model.pkl"))
+    scaler = joblib.load(os.path.join(script_dir, "scaler.pkl"))
+    return model, scaler
+
+model, scaler = load_artifacts()
+
+def prepare_input(credit_score, age, tenure, balance, num_products,
+                  has_crcard, is_active, estimated_salary,
+                  geography, gender):
+    geo_germany = 1 if geography == "Germany" else 0
+    geo_spain = 1 if geography == "Spain" else 0
+    gender_male = 1 if gender == "Male" else 0
+
+    data = pd.DataFrame([[
+        credit_score, age, tenure, balance, num_products,
+        int(has_crcard), int(is_active), estimated_salary,
+        geo_germany, geo_spain, gender_male
+    ]], columns=FEATURE_COLUMNS)
+
+    scaled = scaler.transform(data)
+    return scaled
 
 # ══════════════════════════════════════════════════════════════
 # CSS
@@ -108,12 +139,12 @@ div[data-testid="stSlider"] > div > div > div > div {
 
 /* Selectbox */
 .stSelectbox [data-baseweb="select"] > div {
-    background-color: #1f0a31 !important;
+    background-color: #200a31 !important;
     border: 1.5px solid rgba(213,82,163,0.3) !important;
     border-radius: 12px !important;
 }
 .stSelectbox [data-baseweb="select"] > div {
-    background-color: #1f0a31 !important;
+    background-color: #200a31 !important;
     border: 1.5px solid rgba(213,82,163,0.3) !important;
     border-radius: 12px !important;
 }
@@ -246,12 +277,9 @@ div[data-testid="stButton"] > button:hover {
 p {
     color: white;
 }
-
-
-            
-
-
-
+            ul.st-f1.st-bu.st-cs.st-ct.st-cl.st-cv.st-cw.st-cx.st-b8.st-b9.st-bz.st-c0.st-c1.st-c2.st-cr.st-f8.st-f9 {
+    background-color: #1f0a30;
+}
 
 </style>
 """, unsafe_allow_html=True)
@@ -285,10 +313,19 @@ with col3:
     is_active = st.checkbox("Is Active Member", value=True)
 
 st.write("")
-predict_btn = st.button("Predict Churn", type="primary", use_container_width=True)
+predict_btn = st.button("Predict Churn", type="primary", width='stretch')
 
 # ── Results ──
 if predict_btn:
+    scaled_input = prepare_input(
+        credit_score, age, tenure, balance, num_products,
+        has_crcard, is_active, estimated_salary,
+        geography, gender
+    )
+
+    prediction = model.predict(scaled_input)[0]
+    prob = model.predict_proba(scaled_input)[0]
+
     input_data = pd.DataFrame([{
         'CreditScore': credit_score, 'Age': age, 'Tenure': tenure,
         'Balance': balance, 'NumOfProducts': num_products,
@@ -296,8 +333,6 @@ if predict_btn:
         'EstimatedSalary': estimated_salary,
         'Geography': geography, 'Gender': gender,
     }])
-    prediction = model.predict(input_data)[0]
-    prob = model.predict_proba(input_data)[0]
 
     st.divider()
     st.markdown('<p class="badge">RESULT</p>', unsafe_allow_html=True)
@@ -337,4 +372,4 @@ if predict_btn:
     with st.expander("Technical Details"):
         st.text(f"Raw Prediction: {prediction}")
         st.text(f"Probabilities: [{prob[0]:.6f}  {prob[1]:.6f}]")
-        st.dataframe(input_data, use_container_width=True)
+        st.dataframe(input_data, width='stretch')
