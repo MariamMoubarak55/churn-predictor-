@@ -36,9 +36,9 @@ Build a **machine learning classifier** that predicts whether a customer will ex
 ### What We Delivered
 | Deliverable | Description |
 |---|---|
-| **ML Model** | Random Forest Classifier — 86.8% accuracy, 0.85 ROC-AUC |
+| **ML Model** | Random Forest Classifier — 86.1% accuracy, 0.87 ROC-AUC |
 | **Interactive Dashboard** | Streamlit web app — dark modern UI with Space Grotesk font |
-| **Full Pipeline** | Scikit‑learn Pipeline (preprocessing + model) saved as a single file |
+| **ML Model** | Random Forest Classifier (saved separately from scaler) |
 | **Knowledge Base** | 2,700+ line Arabic reference guide explaining every concept |
 
 ---
@@ -75,7 +75,7 @@ Build a **machine learning classifier** that predicts whether a customer will ex
 No Churn (0):  7,963 (79.63%)
 Churn (1):     2,037 (20.37%)
 ```
-**Mild class imbalance** — ROC-AUC is preferred over accuracy for evaluation.
+**Mild class imbalance** (~80/20) — handled naturally; no class weighting used.
 
 ### Data Quality
 - **Null values:** 0
@@ -162,11 +162,10 @@ y = df['Exited']
 ### 4.3 Train/Test Split
 ```python
 X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, random_state=42, stratify=y
+    X, y, test_size=0.2, random_state=42
 )
 ```
-- **80/20 split** with stratification to preserve the 20% churn ratio in both sets
-- `random_state=42` for reproducibility
+- 80/20 split with `random_state=42` for reproducibility (no stratification)
 
 ### 4.4 Encoding Categorical Variables
 ```python
@@ -231,10 +230,12 @@ for name, model in models.items():
     model.fit(X_train, y_train)
 ```
 
-### 5.3 Why Pipeline?
-- **Single file:** One `.pkl` contains preprocessing + model — no separate scaler needed
-- **No feature mismatch:** Pipeline guarantees the same encoding and scaling every time
-- **No manual dummies:** Send raw text (`"France"`, `"Male"`) — Pipeline handles OneHotEncoding automatically
+### 5.3 Why Pipeline? (for model comparison)
+- **Fair comparison:** Same preprocessing is applied identically to every model during training
+- **No feature mismatch:** Pipeline guarantees the same encoding and scaling across all models
+- **Clean training code:** Each model is trained with identical preprocessing in one `fit()` call
+
+> **Note:** For deployment, preprocessing is done manually in `app_dashboard.py` — one-hot encoding in Python + `scaler.pkl` + `bank_churn_model.pkl`. The training Pipeline was used only during experimentation, not in production.
 
 ---
 
@@ -253,34 +254,34 @@ for name, model in models.items():
 
 ```
                 Model   Accuracy  Precision  Recall  F1-Score  ROC-AUC
-        Random Forest     0.8640     0.7824  0.4595    0.5789   0.8522
-                  SVM     0.8625     0.8474  0.3956    0.5394   0.8231
-                  KNN     0.8390     0.6680  0.4152    0.5121   0.7828
-  Logistic Regression     0.8080     0.5891  0.1867    0.2836   0.7748
-        Decision Tree     0.7825     0.4685  0.5111    0.4888   0.6815
+        Random Forest     0.8665     0.7625  0.4656    0.5782   0.8653
+                  SVM     0.8560     0.7692  0.3817    0.5102   0.8248
+                  KNN     0.8300     0.6109  0.3715    0.4620   0.7604
+  Logistic Regression     0.8110     0.5524  0.2010    0.2948   0.7789
+        Decision Tree     0.7810     0.4490  0.5038    0.4748   0.6763
 ```
 
 ### 6.3 Analysis
-- **🏆 Random Forest wins** across accuracy, F1, and ROC-AUC.
-- **SVM** is a strong second — zero overfitting, highest precision.
-- **Logistic Regression** underfits — 18.7% recall means it misses 81% of churners.
-- **Decision Tree** overfits severely — 100% train accuracy, only 78% test.
+- **🏆 Random Forest wins** on accuracy and ROC-AUC.
+- **SVM** is a strong second — highest precision (0.7692).
+- **Logistic Regression** underfits — 20.1% recall means it misses 80% of churners.
+- **Decision Tree** overfits severely — 100% train accuracy, only 78.1% test.
 
 ### 6.4 Overfitting Check
 
 ```
                 Model   Train Accuracy  Test Accuracy  Difference
-        Decision Tree          1.0000         0.7825      0.2175 🔴
-        Random Forest          1.0000         0.8640      0.1360 🟠
-                  KNN          0.8806         0.8390      0.0416 🟡
-  Logistic Regression          0.8106         0.8080      0.0026 ✅
-                  SVM          0.8625         0.8625      0.0000 ⭐
+        Decision Tree          1.0000         0.7810      0.2190 🔴
+        Random Forest          1.0000         0.8665      0.1335 🟠
+                  KNN          0.8741         0.8300      0.0441 🟡
+  Logistic Regression          0.8114         0.8110      0.0004 ✅
+                  SVM          0.8654         0.8560      0.0094 ⭐
 ```
 
 **Key Insights:**
-- **SVM:** Perfect generalization — train = test accuracy. Overfitting = 0.
-- **Random Forest:** 13.6% gap — needs hyperparameter tuning
-- **Decision Tree:** 21.7% gap — dangerously overfit
+- **SVM:** Near-perfect generalization — only 0.94% gap.
+- **Random Forest:** 13.4% gap — needs hyperparameter tuning
+- **Decision Tree:** 21.9% gap — dangerously overfit
 
 ---
 
@@ -312,34 +313,34 @@ rf_tuned.fit(X_train, y_train)
 ### 7.3 Results After Tuning
 | Metric | Default RF | Tuned RF |
 |--------|-----------|----------|
-| Train Accuracy | 100% | **89.3%** |
-| Test Accuracy | 86.4% | **86.8%** ✅ |
-| Overfitting Gap | 13.6% | **2.5%** ✅ |
+| Train Accuracy | 100% | **89.4%** |
+| Test Accuracy | 86.7% | **86.1%** ✅ |
+| Overfitting Gap | 13.4% | **3.3%** ✅ |
 
-**The gap dropped from 13.6% to 2.5%** — the model now generalizes much better.
+**The gap dropped from 13.4% to 3.3%** — the model now generalizes much better.
 
 ### 7.4 Confusion Matrix
 ```
                      Predicted No   Predicted Yes
-     Actual No         1523              69
-     Actual Yes         195             213
+     Actual No         1548              59
+     Actual Yes         219             174
 ```
 
-- **True Negatives:** 1,523 (correctly identified stayers)
-- **True Positives:** 213 (correctly identified churners)
-- **False Positives:** 69 (predicted churn, but stayed)
-- **False Negatives:** 195 (predicted stay, but churned — **missed churners**)
+- **True Negatives:** 1,548 (correctly identified stayers)
+- **True Positives:** 174 (correctly identified churners)
+- **False Positives:** 59 (predicted churn, but stayed)
+- **False Negatives:** 219 (predicted stay, but churned — **missed churners**)
 
 ### 7.5 Classification Report
 ```
               precision    recall  f1-score   support
-           0       0.89      0.96      0.92      1592
-           1       0.76      0.52      0.62       408
-    accuracy                           0.87      2000
+           0       0.88      0.96      0.92      1607
+           1       0.75      0.44      0.56       393
+    accuracy                           0.86      2000
 ```
 
 ### 7.6 ROC Curve
-The ROC-AUC of the tuned model is **~0.85**, confirming strong separation between the two classes.
+The ROC-AUC of the tuned model is **0.87**, confirming strong separation between the two classes.
 
 ---
 
@@ -356,14 +357,14 @@ importance = pd.DataFrame({
 
 | Rank | Feature | Importance | Interpretation |
 |------|---------|------------|----------------|
-| 1 | **Age** | ~25% | Older customers are much more likely to churn |
-| 2 | **NumOfProducts** | ~18% | Customers with 3-4 products show higher churn |
-| 3 | **Balance** | ~15% | High balance + inactivity = churn signal |
-| 4 | **EstimatedSalary** | ~12% | Moderate influence through interactions |
-| 5 | **CreditScore** | ~10% | Lower scores correlate with higher churn |
-| 6 | **Geography (Germany)** | ~7% | German customers churn more than French/Spanish |
-| 7 | **IsActiveMember** | ~6% | Active members are more loyal |
-| 8 | **Tenure** | ~4% | Newer customers are slightly more likely to churn |
+| 1 | **Age** | 32.3% | Older customers are much more likely to churn |
+| 2 | **NumOfProducts** | 23.6% | Customers with 3-4 products show higher churn |
+| 3 | **Balance** | 10.3% | High balance + inactivity = churn signal |
+| 4 | **EstimatedSalary** | 7.5% | Moderate influence through interactions |
+| 5 | **CreditScore** | 7.4% | Lower scores correlate with higher churn |
+| 6 | **IsActiveMember** | 6.9% | Active members are more loyal |
+| 7 | **Geography (Germany)** | 4.5% | German customers churn more than French/Spanish |
+| 8 | **Tenure** | 4.0% | Newer customers are slightly more likely to churn |
 
 **Bottom line:** Age × Balance × Activity are the three pillars of churn prediction for this dataset.
 
@@ -522,20 +523,20 @@ churn-predictor/
 
 | Stage | Model | ROC-AUC | Train Acc | Test Acc | Overfit Gap |
 |-------|-------|---------|-----------|----------|-------------|
-| Baseline | Logistic Regression | 0.7748 | 0.8106 | 0.8080 | 0.0026 |
-| Baseline | Decision Tree | 0.6815 | 1.0000 | 0.7825 | 0.2175 |
-| Baseline | Random Forest | 0.8522 | 1.0000 | 0.8640 | 0.1360 |
-| Baseline | KNN | 0.7828 | 0.8806 | 0.8390 | 0.0416 |
-| Baseline | SVM | 0.8231 | 0.8625 | 0.8625 | 0.0000 |
-| **Tuned** | **Random Forest** | **0.8522** | **0.8931** | **0.8680** | **0.0251** ✅ |
+| Baseline | Logistic Regression | 0.7789 | 0.8114 | 0.8110 | 0.0004 |
+| Baseline | Decision Tree | 0.6763 | 1.0000 | 0.7810 | 0.2190 |
+| Baseline | Random Forest | 0.8653 | 1.0000 | 0.8665 | 0.1335 |
+| Baseline | KNN | 0.7604 | 0.8741 | 0.8300 | 0.0441 |
+| Baseline | SVM | 0.8248 | 0.8654 | 0.8560 | 0.0094 |
+| **Tuned** | **Random Forest** | **0.8703** | **0.8944** | **0.8610** | **0.0334** ✅ |
 
 ## Appendix B: Key Lessons Learned
 
 1. **Always do EDA first** — the correlation heatmap revealed Age, Balance, and Activity as the top predictors
 2. **Try multiple models** — Logistic Regression was the worst; Random Forest was the best. No one can predict this without experimentation.
-3. **Overfitting is real** — the default Decision Tree memorized the training set (100% accuracy) and failed on the test set (78%)
-4. **Hyperparameter tuning matters** — reducing the Random Forest overfitting gap from 13.6% → 2.5% with 4 parameter changes
-5. **Pipeline is king for deployment** — one `.pkl` file ensures identical preprocessing every time. No feature-name warnings, no mismatch errors.
+3. **Overfitting is real** — the default Decision Tree memorized the training set (100% accuracy) and failed on the test set (78.1%)
+4. **Hyperparameter tuning matters** — reducing the Random Forest overfitting gap from 13.4% → 3.3% with 4 parameter changes
+5. **Document your preprocessing exactly** — the model can't predict without knowing how features were encoded. Manual encoding in code is more transparent than a pipeline `.pkl`.
 6. **ROC-AUC > Accuracy** — the imbalance (80/20) means a "predict all zero" model gets 80% accuracy but 0.5 AUC. AUC catches this.
 
 ---

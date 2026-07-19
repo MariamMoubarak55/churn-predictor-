@@ -3,7 +3,7 @@
   <img src="https://img.shields.io/badge/Streamlit-1.50%2B-FF4B4B?logo=streamlit&logoColor=white" alt="Streamlit">
   <img src="https://img.shields.io/badge/scikit--learn-1.5%2B-F7931E?logo=scikit-learn&logoColor=white" alt="scikit-learn">
   <img src="https://img.shields.io/badge/model-Random%20Forest-831C91" alt="Model">
-  <img src="https://img.shields.io/badge/accuracy-86.8%25-success" alt="Accuracy">
+  <img src="https://img.shields.io/badge/accuracy-86.1%25-success" alt="Accuracy">
   <img src="https://img.shields.io/badge/license-MIT-green" alt="License">
 </p>
 
@@ -32,7 +32,7 @@ This is not just an ML model — it's a complete application with a polished UI,
 - 📱 **Fully Responsive** — Works on mobile, tablet, and desktop
 - 🔍 **Technical Details Panel** — Built-in expander showing raw prediction and input data
 - 🧠 **Trained Model** — Random Forest Classifier with StandardScaler (manual preprocessing)
-- 🚀 **Cached Model Loading** — `@st.cache_resource` ensures fast performance with no reloads
+- 🚀 **Cached Model Loading** — `@st.cache_resource` loads model and scaler once, no reloads between predictions
 
 ---
 
@@ -156,30 +156,30 @@ Input Data
         ├── n_estimators: 200
         ├── max_depth: 10
         ├── random_state: 42
-        └── class_weight: balanced_subsample
+        └── class_weight: None
 ```
 
 ### Performance Metrics
 
 | Metric | Value |
 |--------|-------|
-| **Accuracy** | 86.8% |
-| **ROC-AUC** | 0.85 |
-| **Precision (Churn)** | 0.76 |
-| **Recall (Churn)** | 0.52 |
-| **F1-Score (Churn)** | 0.62 |
+| **Accuracy** | 86.1% |
+| **ROC-AUC** | 0.87 |
+| **Precision (Churn)** | 0.75 |
+| **Recall (Churn)** | 0.44 |
+| **F1-Score (Churn)** | 0.56 |
 
 ### Dataset
 
 - **Source:** Kaggle — Bank Customer Churn Dataset
 - **Size:** 10,000 European bank customers
-- **Churn Rate:** ~20.4% (imbalanced — handled via `class_weight='balanced'`)
+- **Churn Rate:** ~20.4% (imbalanced — no class weighting applied, `class_weight=None`)
 
 ### Preprocessing
 
 - **Manual One-Hot Encoding:** Geography (3 values → 2 columns), Gender (2 values → 1 column) — handled in Python before scaling
 - **StandardScaler:** Standardizes all 11 features (mean = 0, std = 1) — saved as `scaler.pkl`
-- **Train/Test Split:** 80% training, 20% testing with `stratify` to preserve churn ratio
+- **Train/Test Split:** 80% training, 20% testing — no stratification applied
 
 ---
 
