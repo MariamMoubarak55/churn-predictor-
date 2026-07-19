@@ -57,10 +57,10 @@ Build a **machine learning classifier** that predicts whether a customer will ex
 |---|--------|------|----------------|---------|
 | 1 | `RowNumber` | int | 1 – 10,000 | Row index — **dropped** |
 | 2 | `CustomerId` | int | 15,565,702 – 15,815,690 | Unique ID — **dropped** |
-| 3 | `Surname` | str | — | Last name — **dropped** |
+| 3 | `Surname` | object | — | Last name — **dropped** |
 | 4 | `CreditScore` | int | 350 – 850 | Financial credit rating |
-| 5 | `Geography` | str | France, Germany, Spain | Customer country |
-| 6 | `Gender` | str | Male, Female | Customer sex |
+| 5 | `Geography` | object | France, Germany, Spain | Customer country |
+| 6 | `Gender` | object | Male, Female | Customer sex |
 | 7 | `Age` | int | 18 – 92 | Age in years |
 | 8 | `Tenure` | int | 0 – 10 | Years with the bank |
 | 9 | `Balance` | float | 0 – 250,898 | Current account balance |
