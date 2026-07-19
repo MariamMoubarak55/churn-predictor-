@@ -36,7 +36,7 @@ Build a **machine learning classifier** that predicts whether a customer will ex
 ### What We Delivered
 | Deliverable | Description |
 |---|---|
-| **ML Model** | Random Forest Classifier — 86.1% accuracy, 0.87 ROC-AUC |
+| **ML Model** | Random Forest Classifier — 86.1% accuracy, 0.8653 ROC-AUC |
 | **Interactive Dashboard** | Streamlit web app — dark modern UI with Space Grotesk font |
 | **ML Model** | Random Forest Classifier (saved separately from scaler) |
 | **Knowledge Base** | 2,700+ line Arabic reference guide explaining every concept |
