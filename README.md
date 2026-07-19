@@ -198,7 +198,7 @@ This project is licensed under the [MIT License](LICENSE) — feel free to use a
 
 ---
 
-## 👤 Author
+## 👤 Authors
 
 <p>
   <b>Keroles Salah Fakhry</b> — <b>KSF</b><br>
@@ -211,6 +211,17 @@ This project is licensed under the [MIT License](LICENSE) — feel free to use a
   <a href="https://github.com/keroles-salah"><img src="https://img.shields.io/badge/GitHub-keroles--salah-181717?logo=github&logoColor=white" alt="GitHub"></a>
   <a href="https://www.linkedin.com/in/kerolessalah05/"><img src="https://img.shields.io/badge/LinkedIn-kerolessalah05-0A66C2?logo=linkedin&logoColor=white" alt="LinkedIn"></a>
   <a href="https://www.youtube.com/@kerlssalah"><img src="https://img.shields.io/badge/YouTube-@kerlssalah-FF0000?logo=youtube&logoColor=white" alt="YouTube"></a>
+</p>
+
+<br>
+
+<p>
+  <b>Mariam Moubarak</b><br>
+  🤝 Co-author & Collaborator
+</p>
+
+<p>
+  <a href="https://github.com/MariamMoubarak55"><img src="https://img.shields.io/badge/GitHub-MariamMoubarak55-181717?logo=github&logoColor=white" alt="GitHub"></a>
 </p>
 
 ---
