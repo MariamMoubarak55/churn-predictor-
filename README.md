@@ -66,7 +66,7 @@ churn-predictor/
 ├── screenshots/
 │   └── dashboard.png            # App UI screenshot
 └── README.md                     # Documentation (this file)
-```
+
 churn-predictor/
 ├── app_dashboard.py              # Streamlit app — UI + logic
 ├── bank_churn_model.pkl     # Trained model (full Pipeline)
