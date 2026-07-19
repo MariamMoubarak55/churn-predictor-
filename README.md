@@ -130,7 +130,7 @@ streamlit run app_dashboard.py
 | 3 | Tenure | Numeric | 0–10 | Years the customer has been with the bank |
 | 4 | Balance | Numeric | 0–300,000 | Current account balance (USD) |
 | 5 | EstimatedSalary | Numeric | 0–300,000 | Estimated annual salary (USD) |
-| 6 | NumOfProducts | Categorical | 1, 2, 3, 4 | Number of bank products the customer uses |
+| 6 | NumOfProducts | Numeric | 1, 2, 3, 4 | Number of bank products the customer uses |
 | 7 | Geography | Categorical | France, Germany, Spain | Customer's country |
 | 8 | Gender | Categorical | Female, Male | Customer's gender |
 | 9 | HasCrCard | Binary | Yes / No | Does the customer have a credit card? |
