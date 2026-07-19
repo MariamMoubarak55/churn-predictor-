@@ -133,8 +133,8 @@ streamlit run app_dashboard.py
 | 6 | NumOfProducts | Numeric | 1, 2, 3, 4 | Number of bank products the customer uses |
 | 7 | Geography | Categorical | France, Germany, Spain | Customer's country |
 | 8 | Gender | Categorical | Female, Male | Customer's gender |
-| 9 | HasCrCard | Binary | Yes / No | Does the customer have a credit card? |
-| 10 | IsActiveMember | Binary | Yes / No | Is the customer an active member? |
+| 9 | HasCrCard | Numeric | Yes / No | Does the customer have a credit card? |
+| 10 | IsActiveMember | Numeric | Yes / No | Is the customer an active member? |
 
 ---
 
@@ -164,10 +164,10 @@ Input Data
 | Metric | Value |
 |--------|-------|
 | **Accuracy** | 86.1% |
-| **ROC-AUC** | 0.87 |
-| **Precision (Churn)** | 0.75 |
-| **Recall (Churn)** | 0.44 |
-| **F1-Score (Churn)** | 0.56 |
+| **ROC-AUC** | 0.8653 |
+| **Precision (Churn)** | 0.76 |
+| **Recall (Churn)** | 0.4656 |
+| **F1-Score (Churn)** | 0.5782 |
 
 ### Dataset
 
