@@ -321,20 +321,20 @@ rf_tuned.fit(X_train, y_train)
 ### 7.4 Confusion Matrix
 ```
                      Predicted No   Predicted Yes
-     Actual No         1521              71
-     Actual Yes         205             203
+     Actual No         1523              69
+     Actual Yes         195             213
 ```
 
-- **True Negatives:** 1,521 (correctly identified stayers)
-- **True Positives:** 203 (correctly identified churners)
-- **False Positives:** 71 (predicted churn, but stayed)
-- **False Negatives:** 205 (predicted stay, but churned — **missed churners**)
+- **True Negatives:** 1,523 (correctly identified stayers)
+- **True Positives:** 213 (correctly identified churners)
+- **False Positives:** 69 (predicted churn, but stayed)
+- **False Negatives:** 195 (predicted stay, but churned — **missed churners**)
 
 ### 7.5 Classification Report
 ```
               precision    recall  f1-score   support
-           0       0.88      0.96      0.92      1592
-           1       0.74      0.50      0.60       408
+           0       0.89      0.96      0.92      1592
+           1       0.76      0.52      0.62       408
     accuracy                           0.87      2000
 ```
 
@@ -376,19 +376,18 @@ importance = pd.DataFrame({
 User Browser (Port 8501)
         │
         ▼
-┌──────────────────┐
-│   app.py          │  Streamlit frontend
-│   app_dashboard.py│  (dark modern variant)
-└──────┬───────────┘
-       │ joblib.load()
+┌──────────────────────────────────┐
+│   app_dashboard.py               │  Streamlit frontend (dark modern UI)
+│   ├── Manual one-hot encoding     │  Geography → 2 cols, Gender → 1 col
+│   └── scaler.transform()         │  StandardScaler on 11 features
+└──────┬───────────────────────────┘
+       │ model.predict() + scaler.transform()
        ▼
-┌──────────────────┐
-│  bank_churn_     │  Scikit‑learn Pipeline
-│  model_full.pkl  │  ├── ColumnTransformer
-│                  │  │   ├── StandardScaler
-│                  │  │   └── OneHotEncoder
-│                  │  └── RandomForestClassifier
-└──────────────────┘
+┌─────────────────────┬─────────────────┐
+│  bank_churn_        │  scaler.pkl     │
+│  model.pkl          │  (StandardScaler)│
+│  (RandomForest)     │                 │
+└─────────────────────┴─────────────────┘
 ```
 
 ### 9.2 Dashboard Features
@@ -403,36 +402,55 @@ User Browser (Port 8501)
 | **Probability** | Two metric cards: Stay % + Churn % |
 | **Responsive** | Mobile‑first media queries (`max-width: 640px`) |
 
-### 9.3 Key Code Pattern — Pipeline Predictions
+### 9.3 Key Code Pattern — Manual Preprocessing + Prediction
 ```python
-# No need to manually encode or scale — the Pipeline handles everything
-input_data = pd.DataFrame([{
+# Encode categorical features manually, then scale, then predict
+import pandas as pd
+
+raw_data = {
     'CreditScore': 650, 'Age': 35, 'Tenure': 5,
     'Balance': 50000.0, 'NumOfProducts': 2,
     'HasCrCard': 1, 'IsActiveMember': 1,
     'EstimatedSalary': 100000.0,
     'Geography': 'France', 'Gender': 'Female'
-}])
+}
 
-prediction = model.predict(input_data)[0]        # 0 or 1
-probability = model.predict_proba(input_data)[0]  # [P(stay), P(churn)]
+# Manual one-hot encoding (must match training order!)
+geo_germany = 1 if raw_data['Geography'] == 'Germany' else 0
+geo_spain  = 1 if raw_data['Geography'] == 'Spain' else 0
+gender_male = 1 if raw_data['Gender'] == 'Male' else 0
+
+input_df = pd.DataFrame([[raw_data['CreditScore'], raw_data['Age'],
+    raw_data['Tenure'], raw_data['Balance'], raw_data['NumOfProducts'],
+    raw_data['HasCrCard'], raw_data['IsActiveMember'],
+    raw_data['EstimatedSalary'],
+    geo_germany, geo_spain, gender_male]],
+    columns=['CreditScore','Age','Tenure','Balance','NumOfProducts',
+             'HasCrCard','IsActiveMember','EstimatedSalary',
+             'Geography_Germany','Geography_Spain','Gender_Male'])
+
+scaled = scaler.transform(input_df)
+prediction = model.predict(scaled)[0]           # 0 or 1
+probability = model.predict_proba(scaled)[0]    # [P(stay), P(churn)]
 ```
 
 ### 9.4 Model Serialization
 ```python
 import joblib
 
-# Save the complete Pipeline (preprocessor + classifier)
-joblib.dump(model, "bank_churn_model_full.pkl")
+# Save model and scaler separately
+joblib.dump(model, "bank_churn_model.pkl")
+joblib.dump(scaler, "scaler.pkl")
 
-# Load anywhere — same interface, same preprocessing
-model = joblib.load("bank_churn_model_full.pkl")
+# Load both for predictions
+model = joblib.load("bank_churn_model.pkl")
+scaler = joblib.load("scaler.pkl")
 ```
 
-**Why one file?**
-- No separate scaler/encoder files to manage
-- Zero risk of feature-order mismatch
-- Identical preprocessing guarantees reproducibility
+**Why two files?**
+- Model and scaler are saved separately for clarity
+- Manual one-hot encoding is done in Python before scaling
+- Feature order is explicitly defined in the app code
 
 ---
 
@@ -480,32 +498,22 @@ joblib>=1.4
 ```
 churn-predictor/
 │
-├── app.py                        # Original Streamlit app (Arabic comments)
-├── app_clean.py                  # Clean version — no comments
 ├── app_dashboard.py              # Dark modern dashboard (MAIN)
 │
-├── bank_churn_model_full.pkl     # Trained Pipeline — 8.3 MB
+├── bank_churn_model.pkl          # Trained Random Forest Classifier
+├── scaler.pkl                    # StandardScaler (fitted on 11 features)
+│
+├── Churn_Modelling.csv           # Dataset (10,000 rows × 14 columns)
+├── Churn_Modelling_Solution.ipynb # EDA + training notebook
+├── test_cases.xlsx               # Sample test cases for validation
+│
+├── screenshots/
+│   └── dashboard.png             # App screenshot
 │
 ├── requirements.txt              # Python dependencies
 ├── README.md                     # Quick-start guide
 │
 └── DOCS.md                       # ← This file (full documentation)
-```
-
-### Supporting Files (in parent Vault)
-```
-KSF Vault/
-├── AI-شروحات.md                  # 2,700+ line Arabic knowledge base
-└── assets/
-    ├── logistic_regression.png   # Model diagrams (5)
-    ├── decision_tree.png
-    ├── random_forest.png
-    ├── knn.png
-    ├── svm.png
-    ├── correlation_types.png     # Correlation diagrams (3)
-    ├── positive_correlation.png
-    ├── negative_correlation.png
-    └── dash_final_*.png          # Dashboard screenshots
 ```
 
 ---

@@ -31,7 +31,7 @@ This is not just an ML model — it's a complete application with a polished UI,
 - 📊 **Dual Probability View** — Stay probability and churn probability displayed side-by-side in metric cards
 - 📱 **Fully Responsive** — Works on mobile, tablet, and desktop
 - 🔍 **Technical Details Panel** — Built-in expander showing raw prediction and input data
-- 🧠 **Full Pipeline Model** — Scikit-learn Pipeline (StandardScaler + OneHotEncoder + Random Forest)
+- 🧠 **Trained Model** — Random Forest Classifier with StandardScaler (manual preprocessing)
 - 🚀 **Cached Model Loading** — `@st.cache_resource` ensures fast performance with no reloads
 
 ---
@@ -42,7 +42,7 @@ This is not just an ML model — it's a complete application with a polished UI,
 |------------|---------|
 | **Python 3.10+** | Core programming language |
 | **Streamlit** | Interactive web UI framework |
-| **scikit-learn** | Model training + Pipeline |
+| **scikit-learn** | Model training |
 | **pandas** | Input data processing |
 | **NumPy** | Numerical operations |
 | **joblib** | Model serialization & loading |
@@ -56,7 +56,7 @@ This is not just an ML model — it's a complete application with a polished UI,
 ```
 churn-predictor/
 ├── app_dashboard.py              # Streamlit app — UI + logic
-├── bank_churn_model.pkl          # Trained model (full Pipeline — Random Forest)
+├── bank_churn_model.pkl          # Trained model (Random Forest Classifier)
 ├── scaler.pkl                    # StandardScaler for feature normalization
 ├── requirements.txt              # Python dependencies
 ├── Churn_Modelling.csv           # Dataset (10,000 bank customers)
@@ -69,7 +69,7 @@ churn-predictor/
 
 churn-predictor/
 ├── app_dashboard.py              # Streamlit app — UI + logic
-├── bank_churn_model.pkl     # Trained model (full Pipeline)
+├── bank_churn_model.pkl     # Trained model (Random Forest Classifier)
 ├── requirements.txt              # Python dependencies
 └── README.md                     # Documentation (this file)
 ```
@@ -140,23 +140,23 @@ streamlit run app_dashboard.py
 
 ## 🧠 Model Details
 
-### Pipeline Architecture
+### Architecture
 
 ```
 Input Data
     │
-    ├── Numerical Features (StandardScaler)
-    │   └── CreditScore, Age, Tenure, Balance, NumOfProducts,
-    │       HasCrCard, IsActiveMember, EstimatedSalary
+    ├── Categorical → Manual One-Hot Encoding (in Python)
+    │   └── Geography → Geography_Germany, Geography_Spain
+    │   └── Gender → Gender_Male
     │
-    ├── Categorical Features (OneHotEncoder)
-    │   └── Geography, Gender
+    ├── Numerical Features → StandardScaler (scaler.pkl)
+    │   └── All 11 features scaled (mean=0, std=1)
     │
-    └── RandomForestClassifier
+    └── RandomForestClassifier (bank_churn_model.pkl)
         ├── n_estimators: 200
         ├── max_depth: 10
         ├── random_state: 42
-        └── class_weight: balanced
+        └── class_weight: balanced_subsample
 ```
 
 ### Performance Metrics
@@ -165,9 +165,9 @@ Input Data
 |--------|-------|
 | **Accuracy** | 86.8% |
 | **ROC-AUC** | 0.85 |
-| **Precision (Churn)** | ~0.84 |
-| **Recall (Churn)** | ~0.80 |
-| **F1-Score (Churn)** | ~0.82 |
+| **Precision (Churn)** | 0.76 |
+| **Recall (Churn)** | 0.52 |
+| **F1-Score (Churn)** | 0.62 |
 
 ### Dataset
 
@@ -177,8 +177,8 @@ Input Data
 
 ### Preprocessing
 
-- **StandardScaler:** Standardizes numeric features (mean = 0, std = 1)
-- **OneHotEncoder:** Converts categorical features (Geography, Gender) to binary columns
+- **Manual One-Hot Encoding:** Geography (3 values → 2 columns), Gender (2 values → 1 column) — handled in Python before scaling
+- **StandardScaler:** Standardizes all 11 features (mean = 0, std = 1) — saved as `scaler.pkl`
 - **Train/Test Split:** 80% training, 20% testing with `stratify` to preserve churn ratio
 
 ---
