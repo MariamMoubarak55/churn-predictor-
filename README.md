@@ -222,6 +222,7 @@ This project is licensed under the [MIT License](LICENSE) — feel free to use a
 
 <p>
   <a href="https://github.com/MariamMoubarak55"><img src="https://img.shields.io/badge/GitHub-MariamMoubarak55-181717?logo=github&logoColor=white" alt="GitHub"></a>
+  <a href="https://www.linkedin.com/in/mariam-moubarak-naeem-b0bbb8310/"><img src="https://img.shields.io/badge/LinkedIn-Mariam%20Moubarak-0A66C2?logo=linkedin&logoColor=white" alt="LinkedIn"></a>
 </p>
 
 ---
