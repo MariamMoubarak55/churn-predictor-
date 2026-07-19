@@ -117,7 +117,7 @@ plt.hist(df['EstimatedSalary'], bins=20)
 
 ### 3.4 Categorical Distributions
 ```python
-df['Gender'].value_counts().plot(kind='bar')     # ~50/50 Male/Female
+df['Gender'].value_counts().plot(kind='bar')     
 df['Geography'].value_counts().plot(kind='bar')  # France > Germany > Spain
 ```
 
@@ -140,7 +140,7 @@ sns.heatmap(numeric_df.corr(), annot=True, cmap='coolwarm')
 | Age | +0.29 | Positive |
 | Balance | +0.12 | Positive |
 | IsActiveMember | -0.16 | Negative |
-| NumOfProducts | +0.05 | Positive |
+| NumOfProducts | -0.048 | Negative |
 | EstimatedSalary | +0.01 | ~None |
 
 ---
